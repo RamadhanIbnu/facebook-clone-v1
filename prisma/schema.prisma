@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?  @unique
+  password  String?
+  title     String?
+  posts     Post[]
+  comments  Comment[]
+  likes     Like[]
+  createdAt DateTime @default(now())
+}
+
+model Post {
+  id        String    @id @default(cuid())
+  user      User      @relation(fields: [userId], references: [id])
+  userId    String
+  content   String
+  image     String?
+  comments  Comment[]
+  likes     Like[]
+  createdAt DateTime  @default(now())
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  text      String
+  createdAt DateTime @default(now())
+}
+
+model Like {
+  id     String @id @default(cuid())
+  post   Post   @relation(fields: [postId], references: [id])
+  postId String
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+  @@unique([postId, userId])
+}
