@@ -1,25 +1,10 @@
-export type User = {
-  id: string;
-  name: string;
-  title?: string;
-};
+import type { User as UserType } from "./componentTypes/UserTypes";
+import type { Comment as CommentType } from "./componentTypes/CommentTypes";
+import type { Post as PostType } from "./componentTypes/PostTypes";
 
-export type Comment = {
-  id: string;
-  userId: string;
-  text: string;
-  createdAt: string;
-};
-
-export type Post = {
-  id: string;
-  userId: string;
-  content: string;
-  image?: string;
-  likes: string[]; // userIds
-  comments: Comment[];
-  createdAt: string;
-};
+export type User = UserType;
+export type Comment = CommentType;
+export type Post = PostType;
 
 const users: Record<string, User> = {
   u1: { id: "u1", name: "Alex Johnson", title: "Software Engineer" },

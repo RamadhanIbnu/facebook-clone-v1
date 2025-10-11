@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { prisma } from "../../../../../lib/prisma";
 import { getUserIdFromCookie } from "../../../../../lib/session";
 
-export async function POST(req: Request, { params }: { params: { postId: string } | Promise<{ postId: string }> }) {
-  const resolvedParams = (params as Promise<{ postId: string }>).then ? await (params as Promise<{ postId: string }>) : (params as { postId: string });
-  const { postId } = resolvedParams;
+export async function POST(req: Request, { params }: { params: Promise<{ postId: string }> }) {
+  const p = await params;
+  const { postId } = p;
   const body = await req.json();
   const { text } = body;
   if (!text) return NextResponse.json({ error: "text required" }, { status: 400 });

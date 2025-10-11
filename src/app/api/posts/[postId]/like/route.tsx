@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { prisma } from "../../../../../lib/prisma";
 import { getUserIdFromCookie } from "../../../../../lib/session";
 
-export async function POST(req: Request, { params }: { params: { postId: string } | Promise<{ postId: string }> }) {
-  const resolvedParams = (params as Promise<{ postId: string }>).then ? await (params as Promise<{ postId: string }>) : (params as { postId: string });
-  const { postId } = resolvedParams;
+export async function POST(req: Request, { params }: { params: Promise<{ postId: string }> }) {
+  const p = await params;
+  const { postId } = p;
   const cookie = req.headers.get("cookie");
   const userId = getUserIdFromCookie(cookie);
   if (!userId) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
 
-  // check if like exists
+  // toggle like
   const existing = await prisma.like.findFirst({ where: { postId, userId } });
   if (existing) {
     await prisma.like.delete({ where: { id: existing.id } });

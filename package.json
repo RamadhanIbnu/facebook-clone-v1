@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "test": "jest",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -33,6 +34,8 @@
     "eslint-config-next": "15.5.4",
     "prisma": "5.12.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "node-fetch": "^2.6.12",
+    "tough-cookie": "^4.0.0"
   }
 }

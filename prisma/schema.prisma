@@ -8,15 +8,18 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   name      String
-  email     String?  @unique
+  email     String?   @unique
   password  String?
   title     String?
+  avatar    String?
   posts     Post[]
   comments  Comment[]
   likes     Like[]
-  createdAt DateTime @default(now())
+  followers Follow[]  @relation("following")
+  following Follow[]  @relation("follower")
+  createdAt DateTime  @default(now())
 }
 
 model Post {
@@ -32,7 +35,7 @@ model Post {
 
 model Comment {
   id        String   @id @default(cuid())
-  post      Post     @relation(fields: [postId], references: [id])
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId    String
   user      User     @relation(fields: [userId], references: [id])
   userId    String
@@ -42,9 +45,21 @@ model Comment {
 
 model Like {
   id     String @id @default(cuid())
-  post   Post   @relation(fields: [postId], references: [id])
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
   postId String
   user   User   @relation(fields: [userId], references: [id])
   userId String
+
   @@unique([postId, userId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  follower    User     @relation("follower", fields: [followerId], references: [id])
+  followerId  String
+  following   User     @relation("following", fields: [followingId], references: [id])
+  followingId String
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
 }

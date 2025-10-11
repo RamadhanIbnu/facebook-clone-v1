@@ -2,7 +2,8 @@
 import React, { useEffect, useState } from "react";
 import NewPost from "./NewPost";
 import PostItem from "./Post";
-import type { Post } from "../lib/store";
+import type { Post } from "../lib/componentTypes";
+import type { UpdatedPost } from "../lib/componentTypes";
 
 export default function Feed({ currentUserId }: { currentUserId: string }) {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -22,7 +23,20 @@ export default function Feed({ currentUserId }: { currentUserId: string }) {
 
   const handleCreated = (post: Post) => setPosts((s) => [post, ...s]);
 
-  const handleUpdate = (updated: Post) => setPosts((s) => s.map((p) => (p?.id === updated?.id ? updated : p)));
+  const isDeleted = (u: UpdatedPost): u is { deleted: true; id: string } =>
+    typeof u === "object" &&
+    u !== null &&
+    "deleted" in u &&
+    (u as { deleted?: unknown }).deleted === true;
+
+  const handleUpdate = (updated: UpdatedPost) => {
+    if (!updated) return;
+    if (isDeleted(updated)) {
+      setPosts((s) => s.filter((p) => p.id !== updated.id));
+      return;
+    }
+    setPosts((s) => s.map((p) => (p.id === updated.id ? updated : p)));
+  };
 
   return (
     <div className="space-y-4">
