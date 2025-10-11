@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Facebook Clone v1
 
-## Getting Started
+A lightweight Facebook-like clone built with Next.js (App Router), TypeScript, Tailwind CSS and Prisma (SQLite). Intended as a demo/prototype to explore social features like posts, comments, likes, follow/unfollow, profiles, and avatar uploads.
 
-First, run the development server:
+This repository is a learning / demo project and not production-ready. It focuses on clear code, local development, and straightforward server-side authorization patterns.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Features
+
+- Email/password credentials auth with cookie-based sessions
+- Create, read, update, delete (CRUD) posts
+- Comments on posts with delete permissions enforced
+- Like/unlike posts
+- Follow / unfollow users with follower counts
+- Profile pages with posts and a composer
+- Avatar upload (file upload to local storage via API)
+- Server-side ownership checks for delete endpoints
+- Small test scripts to exercise auth/authorization flows
+
+## Tech stack
+
+- Next.js (App Router)
+- React + TypeScript
+- Tailwind CSS for UI
+- Prisma ORM with SQLite
+
+## Getting started
+
+Prerequisites:
+
+- Node.js 18+ (recommended)
+- npm (or yarn)
+
+Install dependencies:
+
+```powershell
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Run the development server:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```powershell
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open http://localhost:3000 in your browser.
 
-## Learn More
+Run TypeScript checks:
 
-To learn more about Next.js, take a look at the following resources:
+```powershell
+npx tsc --noEmit
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Database
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+This project uses Prisma with SQLite. The database file is located under `prisma/dev.db` (or where your `prisma.schema` config points).
 
-## Deploy on Vercel
+If you modify the Prisma schema, run:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```powershell
+npx prisma generate
+npx prisma migrate dev --name "your-migration-name"
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Important files & folders
+
+- `src/app/` - Next.js App Router pages and API routes
+  - `src/app/api/posts/route.tsx` - Posts API (GET/POST) — POST now uses session cookie as the authoritative user and returns `user` metadata on create.
+  - `src/app/api/profile/[userId]/route.ts` - Profile API returning user, posts (with user and comments metadata), followersCount and isFollowing
+  - `src/app/api/posts/[postId]/route.tsx` - Post-level operations (DELETE with server-side ownership checks)
+- `src/components/` - Reusable React components (Post, NewPost, Avatar, Header, etc.)
+- `src/context/` - Auth, Toast, and modal contexts used across the app
+- `scripts/` - Small Node scripts used for manual integration tests (auth/delete flows). These are utilities, not part of the production app.
+
+## Test scripts
+
+There are a few scripts under `scripts/` intended for dev/test use:
+
+- `scripts/delete-auth-test.js` - manual cookie merging version
+- `scripts/delete-auth-test-cookie.mjs` - ESM cookie-jar version using `tough-cookie`
+- `scripts/delete-auth-test-cookie.js` - CommonJS cookie-jar version (may require node options)
+
+Usage example (Node):
+
+```powershell
+node scripts/delete-auth-test.js
+node --experimental-modules scripts/delete-auth-test-cookie.mjs
+```
+
+## Security notes
+
+- Server-side routes validate ownership for mutating operations (deletes) using atomic queries.
+- POST /api/posts ignores client-supplied `userId` and derives the author from the session cookie to prevent impersonation.
+
+## Contributing
+
+This project is a demo. If you'd like to propose changes, open an issue or submit a PR with a clear description.
+
+## License
+
+MIT
