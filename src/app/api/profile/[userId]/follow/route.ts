@@ -10,7 +10,8 @@ export async function POST(req: Request, context: { params: Promise<{ userId: st
   if (!followerId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (followerId === userId) return NextResponse.json({ error: "Cannot follow yourself" }, { status: 400 });
   try {
-    const follow = await prisma.follow.create({ data: { followerId, followingId: userId } });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const follow = await (prisma as any).follow.create({ data: { followerId, followingId: userId } });
     // return updated counts so client can reconcile
     const clientAny = prisma as unknown as { follow?: { count: (q: unknown) => Promise<number>; findFirst: (q: unknown) => Promise<unknown> } };
     let followersCount = 0;

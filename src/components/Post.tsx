@@ -9,6 +9,8 @@ import type { Post } from "../lib/componentTypes";
 import type { UpdatedPost } from "../lib/componentTypes";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faComment as faCommentIcon, faThumbsUp } from '@fortawesome/free-solid-svg-icons';
 
 type CommentDeleteControlsProps = {
   postId: string;
@@ -55,20 +57,14 @@ function CommentDeleteControls({ postId, commentId, onDeleted, push }: CommentDe
   };
 
   return (
-    <div className="inline-flex items-center">
+        <div className="inline-flex items-center">
       {!confirming ? (
         <button
           className="inline-flex items-center gap-1 text-xs text-red-700 hover:bg-red-50 px-2 py-1 rounded-md border border-red-100 ml-2"
           onClick={() => setConfirming(true)}
           aria-label="Delete comment"
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-            <path d="M3 6h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M8 6v12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M10 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M14 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <FontAwesomeIcon icon={faTrash} className="w-3.5 h-3.5" />
           Delete
         </button>
       ) : (
@@ -196,13 +192,7 @@ export default function PostItem({ post, currentUserId, onUpdated }: Props) {
                       onClick={() => setConfirmDeletePost(true)}
                       aria-label="Delete post"
                     >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden className="opacity-80">
-                        <path d="M3 6h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M8 6v12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M10 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M14 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                      <FontAwesomeIcon icon={faTrash} className="w-3.5 h-3.5 opacity-80" />
                       Delete
                     </button>
                   ) : (
@@ -218,12 +208,7 @@ export default function PostItem({ post, currentUserId, onUpdated }: Props) {
                           <span>Deleting...</span>
                         ) : (
                           <>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                              <path d="M3 6h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                              <path d="M8 6v12a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                              <path d="M10 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                              <path d="M14 11v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
+                            <FontAwesomeIcon icon={faTrash} className="w-3.5 h-3.5" />
                             Confirm
                           </>
                         )}
@@ -254,11 +239,12 @@ export default function PostItem({ post, currentUserId, onUpdated }: Props) {
               <div className="flex justify-between text-sm text-gray-600">
                 <div className="flex gap-4">
                   <button onClick={toggleLike} className={`flex items-center gap-2 px-3 py-1 rounded ${post.likes.includes(currentUserId) ? 'bg-red-50 text-red-600' : 'hover:bg-gray-100'}`}>
-                    <span>{post.likes.includes(currentUserId) ? '❤️' : '👍'}</span>
+                    <FontAwesomeIcon icon={faThumbsUp} className={`w-4 h-4 ${post.likes.includes(currentUserId) ? 'text-red-600' : 'text-current'}`} />
                     <span>{post.likes.length}</span>
                   </button>
                   <button onClick={() => setShowComments((s) => !s)} className="flex items-center gap-2 hover:bg-gray-100 px-3 py-1 rounded">
-                    💬 <span>{post.comments.length}</span>
+                    <FontAwesomeIcon icon={faCommentIcon} className="w-4 h-4" />
+                    <span>{post.comments.length}</span>
                   </button>
                 </div>
               </div>
@@ -272,7 +258,7 @@ export default function PostItem({ post, currentUserId, onUpdated }: Props) {
                           <div>
                             <Link href={`/profile/${c.userId}`}>
                                 <Avatar
-                                  name={((c as unknown as { user?: { name?: string } })?.user?.name) ?? getUserById(c.userId).name}
+                                  name={((c as unknown as { user?: { name?: string } })?.user?.name) ?? (c.userId === authUser?.id ? authUser?.name : getUserById(c.userId).name)}
                                 size={28}
                                 src={
                                   // prefer server-provided avatar on the comment object
@@ -286,8 +272,8 @@ export default function PostItem({ post, currentUserId, onUpdated }: Props) {
                           </div>
                           <div>
                               <div className="text-sm">
-                              <Link href={`/profile/${c.userId}`} className="font-semibold hover:underline">{((c as unknown as { user?: { name?: string } })?.user?.name) ?? getUserById(c.userId).name}</Link>
-                              <Link href={`/profile/${c.userId}`} className="text-xs text-gray-400 ml-2 hover:underline">{`@${((((c as unknown as { user?: { name?: string } })?.user?.name) ?? getUserById(c.userId).name) ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0,20)}`}</Link>
+                              <Link href={`/profile/${c.userId}`} className="font-semibold hover:underline">{((c as unknown as { user?: { name?: string } })?.user?.name) ?? (c.userId === authUser?.id ? authUser?.name : getUserById(c.userId).name)}</Link>
+                              <Link href={`/profile/${c.userId}`} className="text-xs text-gray-400 ml-2 hover:underline">{`@${((((c as unknown as { user?: { name?: string } })?.user?.name) ?? (c.userId === authUser?.id ? authUser?.name : getUserById(c.userId).name)) ?? "").toLowerCase().replace(/[^a-z0-9]+/g, "").slice(0,20)}`}</Link>
                             </div>
                             <div className="text-sm">{c.text}</div>
                           </div>

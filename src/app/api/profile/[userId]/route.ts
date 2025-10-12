@@ -11,7 +11,7 @@ export async function GET(req: Request, context: { params: Promise<{ userId: str
     const userRec = await prisma.user.findUnique({ where: { id: userId } });
     if (!userRec) return NextResponse.json({ user: null }, { status: 404 });
     const user = userRec as unknown as UserPublic;
-  const posts = await prisma.post.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, include: { comments: true, likes: true, user: true } });
+  const posts = await prisma.post.findMany({ where: { userId }, orderBy: { createdAt: "desc" }, include: { comments: { include: { user: true } }, likes: true, user: true } });
     const cookie = req.headers.get("cookie");
     const viewerId = getUserIdFromCookie(cookie);
 
@@ -54,7 +54,7 @@ export async function GET(req: Request, context: { params: Promise<{ userId: str
         content: p.content,
         image: p.image,
         likes: p.likes.map((l) => l.userId),
-        comments: p.comments.map((c) => ({ id: c.id, userId: c.userId, text: c.text, createdAt: c.createdAt })),
+  comments: p.comments.map((c) => ({ id: c.id, userId: c.userId, text: c.text, createdAt: c.createdAt, user: c.user ? { id: c.user.id, name: c.user.name, avatar: c.user.avatar } : null })),
         createdAt: p.createdAt,
       })),
       followersCount,

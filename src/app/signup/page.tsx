@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import PasswordInput from "../../components/PasswordInput";
 import { useRouter } from "next/navigation";
 
 export default function SignUpPage() {
@@ -27,7 +28,7 @@ export default function SignUpPage() {
       {error && <div className="text-red-600 mb-2">{error}</div>}
       <input className="w-full p-2 mb-2" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} />
       <input className="w-full p-2 mb-2" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <input className="w-full p-2 mb-2" placeholder="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <PasswordInput value={password} onChange={setPassword} placeholder="Password" />
       <div className="flex gap-2">
   <button onClick={submit} disabled={loading} className="px-4 py-2 bg-green-600 text-white rounded">{loading ? 'Signing up...' : 'Sign up'}</button>
       </div>

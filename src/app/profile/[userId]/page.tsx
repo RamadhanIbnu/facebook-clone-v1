@@ -11,6 +11,8 @@ import NewPost from "../../../components/NewPost";
 import Header from "../../../components/Header";
 import ProfileImageModal from "../../../components/ProfileImageModal";
 import { useToast } from "../../../context/ToastContext";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner, faCheck, faUser, faChevronDown, faPen } from '@fortawesome/free-solid-svg-icons';
 
 import type { PostPublic, UserPublic } from "../../../lib/componentTypes";
 type PostPublicWithUser = PostPublic & { user?: { id: string; name?: string | null; avatar?: string | null } };
@@ -133,7 +135,7 @@ function FollowButton({ userId, initialFollowing, initialCount, onCountChange }:
 
   return (
     <div className="flex items-center gap-3 relative">
-      <div className="inline-flex items-center rounded-md bg-transparent">
+          <div className="inline-flex items-center rounded-md bg-transparent">
         <button
           type="button"
           onClick={toggle}
@@ -143,15 +145,15 @@ function FollowButton({ userId, initialFollowing, initialCount, onCountChange }:
           aria-label={following ? 'Unfollow' : 'Follow'}
           className={`px-3 sm:px-4 py-2 rounded-l-md text-sm font-medium flex items-center gap-2 transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-300 disabled:opacity-60 disabled:cursor-not-allowed ${following ? 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50' : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50'}`}>
           {loading ? (
-            <svg className="w-4 h-4 animate-spin text-current" viewBox="0 0 24 24" fill="none"><path d="M12 2a10 10 0 100 20 10 10 0 100-20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <FontAwesomeIcon icon={faSpinner} className="w-4 h-4 animate-spin text-current" />
           ) : following ? (
             <>
-              <svg className="w-4 h-4 text-current" viewBox="0 0 20 20" fill="none" aria-hidden><path d="M16.7 5.3a1 1 0 10-1.4-1.4L8 11.17 4.7 7.9A1 1 0 103.3 9.3l4 4a1 1 0 001.4 0l8-8z" fill="currentColor"/></svg>
+              <FontAwesomeIcon icon={faCheck} className="w-4 h-4 text-current" />
               <span className="hidden sm:inline">Following</span>
             </>
           ) : (
             <>
-              <svg className="w-4 h-4 text-current" viewBox="0 0 20 20" fill="none" aria-hidden><path d="M10 5a3 3 0 100 6 3 3 0 000-6zM2 15a8 8 0 0116 0H2z" fill="currentColor"/></svg>
+              <FontAwesomeIcon icon={faUser} className="w-4 h-4 text-current" />
               <span className="hidden sm:inline">Follow</span>
             </>
           )}
@@ -167,7 +169,7 @@ function FollowButton({ userId, initialFollowing, initialCount, onCountChange }:
             aria-label="More follow actions"
             title="More follow actions"
           >
-            <svg className="w-4 h-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden><path d="M5.23 7.21a1 1 0 011.41-.02L10 10.586l3.36-3.36a1 1 0 111.41 1.415l-4.07 4.07a1 1 0 01-1.41 0l-4.07-4.07a1 1 0 01-.01-1.41z"/></svg>
+            <FontAwesomeIcon icon={faChevronDown} className="w-4 h-4" />
           </button>
         )}
       </div>
@@ -372,9 +374,7 @@ export default function ProfilePage() {
                   )}
                   {authUser && String(authUser.id) === String(user.id) && (
                     <button className="px-2 py-1 bg-white text-gray-800 border border-gray-200 rounded text-sm hover:bg-gray-50 transition flex items-center gap-2" onClick={() => alert('Edit profile not implemented')}>
-                      <svg className="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                        <path d="M4 21v-3.75L17.81 3.44a2 2 0 012.83 0l.92.92a2 2 0 010 2.83L7.75 21H4z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                      <FontAwesomeIcon icon={faPen} className="w-4 h-4 sm:hidden" />
                       <span className="hidden sm:inline">Edit</span>
                     </button>
                   )}
@@ -396,9 +396,7 @@ export default function ProfilePage() {
                     )}
                     {authUser && String(authUser.id) === String(user.id) && (
                       <button className="px-2 py-1 bg-white text-gray-800 border border-gray-200 rounded text-sm hover:bg-gray-50 transition flex items-center gap-2" onClick={() => alert('Edit profile not implemented')}>
-                        <svg className="w-4 h-4 sm:hidden" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-                          <path d="M4 21v-3.75L17.81 3.44a2 2 0 012.83 0l.92.92a2 2 0 010 2.83L7.75 21H4z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
+                        <FontAwesomeIcon icon={faPen} className="w-4 h-4 sm:hidden" />
                         <span className="hidden sm:inline">Edit</span>
                       </button>
                     )}
