@@ -1,6 +1,8 @@
-Migrations history removed from the repository.
+This folder should contain your Prisma migrations.
 
-This repository previously contained SQLite migrations. We've removed them so you can create a fresh migration history for PostgreSQL.
+IMPORTANT: the old SQLite migration files were removed to allow creating a fresh Postgres migration history.
+
+If you see any SQL files here, delete them before creating new migrations.
 
 Next steps (run locally):
 
