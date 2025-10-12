@@ -12,8 +12,13 @@ export default function Feed({ currentUserId }: { currentUserId: string }) {
   const load = async () => {
     setLoading(true);
     const res = await fetch("/api/posts");
-    const data = await res.json();
-    setPosts(data.posts);
+  let data: unknown = null;
+    const ct = res.headers.get('content-type') ?? '';
+    if (ct.includes('application/json')) {
+      try { data = await res.json(); } catch { data = null; }
+    }
+  const isPosts = (v: unknown): v is { posts: Post[] } => typeof v === 'object' && v !== null && 'posts' in (v as object);
+  if (isPosts(data)) setPosts(data.posts);
     setLoading(false);
   };
 

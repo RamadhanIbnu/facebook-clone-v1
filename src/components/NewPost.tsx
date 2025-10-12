@@ -29,10 +29,15 @@ export default function NewPost({ currentUserId, onCreated }: Props) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content: text }),
     });
-    const data = await res.json();
+    let data: unknown = null;
+    const ct = res.headers.get('content-type') ?? '';
+    if (ct.includes('application/json')) {
+      try { data = await res.json(); } catch { data = null; }
+    }
     setText("");
     setLoading(false);
-    onCreated(data.post as Post);
+    const isPost = (v: unknown): v is { post: Post } => typeof v === 'object' && v !== null && 'post' in (v as object);
+    if (isPost(data)) onCreated(data.post);
   };
 
   return (

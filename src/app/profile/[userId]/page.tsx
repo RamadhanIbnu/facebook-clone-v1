@@ -210,7 +210,7 @@ function Breadcrumb({ name }: { name: string }) {
 export default function ProfilePage() {
   const params = useParams() as { userId?: string } | null;
   const userId = params?.userId;
-  const [data, setData] = useState<{ user: UserPublic; posts: PostPublic[]; isFollowing?: boolean; followersCount?: number } | null>(null);
+  const [data, setData] = useState<{ user: UserPublic; posts: PostPublic[]; isFollowing?: boolean; followersCount?: number; followingCount?: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -256,8 +256,8 @@ export default function ProfilePage() {
           return;
         }
         if (typeof json === "object" && json !== null && "user" in json && "posts" in json) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          setData(json as any);
+          const parsed = json as { user: UserPublic; posts: PostPublic[]; isFollowing?: boolean; followersCount?: number; followingCount?: number };
+          setData(parsed);
         } else {
           push({ type: "error", message: "Unexpected server response while loading profile" });
           setData(null);
@@ -280,11 +280,18 @@ export default function ProfilePage() {
     const fd = new FormData();
     fd.append('file', file);
     const res = await fetch('/api/profile/avatar', { method: 'POST', body: fd });
-    const json = await res.json();
+    // defensively parse JSON: the server should return JSON, but sometimes platform errors
+    // or network issues result in empty/non-JSON responses which cause res.json() to throw.
+  let json: Record<string, unknown> | null = null;
+    const ct = res.headers.get('content-type') ?? '';
+    if (ct.includes('application/json')) {
+      try { json = await res.json(); } catch { json = null; }
+    }
     setLoading(false);
     if (res.ok) {
       // update local UI immediately
-      setData((d) => (d ? { ...d, user: { ...d.user, avatar: json.avatar } } : d));
+      const avatar = json && typeof json.avatar === 'string' ? json.avatar : undefined;
+      setData((d) => (d ? { ...d, user: { ...d.user, avatar: avatar ?? d.user.avatar } } : d));
       setFile(null);
       if (previewUrl) {
         URL.revokeObjectURL(previewUrl);
@@ -294,7 +301,8 @@ export default function ProfilePage() {
       await refresh();
       push({ type: 'success', message: 'Profile picture updated' });
     } else {
-      push({ type: 'error', message: json.error || 'Upload failed' });
+      const errMsg = json && typeof (json as Record<string, unknown>).error === 'string' ? (json as Record<string, unknown>).error as string : 'Upload failed';
+      push({ type: 'error', message: errMsg });
     }
   };
 
@@ -432,11 +440,11 @@ export default function ProfilePage() {
                 <div className="text-xs text-gray-500">Posts</div>
               </div>
               <div className="text-center">
-                <div className="text-xl font-semibold">{typeof data?.followersCount === 'number' ? data!.followersCount : Math.max(0, Math.floor(posts.length * 1.2))}</div>
+                <div className="text-xl font-semibold">{typeof data?.followersCount === 'number' ? data?.followersCount : 0}</div>
                 <div className="text-xs text-gray-500">Followers</div>
               </div>
               <div className="text-center">
-                <div className="text-xl font-semibold">{Math.max(0, Math.floor(posts.length * 0.6))}</div>
+                <div className="text-xl font-semibold">{typeof data?.followingCount === 'number' ? data?.followingCount : 0}</div>
                 <div className="text-xs text-gray-500">Following</div>
               </div>
             </div>
