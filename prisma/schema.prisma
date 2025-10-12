@@ -15,6 +15,7 @@ model User {
   title     String?
   avatar    String?
   posts     Post[]
+  messages  Message[]
   comments  Comment[]
   likes     Like[]
   followers Follow[]  @relation("following")
@@ -62,4 +63,12 @@ model Follow {
   createdAt   DateTime @default(now())
 
   @@unique([followerId, followingId])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  text      String
+  createdAt DateTime @default(now())
 }

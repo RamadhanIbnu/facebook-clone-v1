@@ -16,6 +16,11 @@ async function main() {
 
   await prisma.post.create({ data: { userId: u3.id, content: 'Golden hour shots from last weekend.', image: '/file.svg' } });
 
+  // seed some messages for the demo/messages page
+  await prisma.message.create({ data: { userId: u1.id, text: 'Hello everyone! This is Alex.' } });
+  await prisma.message.create({ data: { userId: u2.id, text: 'Hi Alex — loving the new layout.' } });
+  await prisma.message.create({ data: { userId: u3.id, text: 'Anyone up for a photo walk this weekend?' } });
+
   console.log('Seed finished');
 }
 

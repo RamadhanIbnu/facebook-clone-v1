@@ -7,6 +7,8 @@ import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHouse, faVideo, faUsers, faStore, faSearch, faPlus, faComments, faBell } from '@fortawesome/free-solid-svg-icons';
+import { useEffect, useState } from 'react';
+import { getWsClient } from '@/lib/wsClient';
 
 export default function Header() {
   const { user, setUser, refresh } = useAuth();
@@ -20,6 +22,21 @@ export default function Header() {
     await refresh();
     router.push('/');
   };
+  const [unread, setUnread] = useState(0);
+
+  useEffect(() => {
+    const client = getWsClient();
+    type MessageEventShape = { type?: string; message?: { id?: string } } | null;
+    const unsub = client.subscribe((data: unknown) => {
+      try {
+        const d = data as MessageEventShape;
+        if (d?.type === 'message.created') {
+          setUnread((u) => u + 1);
+        }
+      } catch {}
+    });
+    return () => { unsub(); };
+  }, []);
 
   return (
   <header className="w-full fb-header sticky top-0 z-50 text-white shadow-sm backdrop-blur-sm">
@@ -41,6 +58,9 @@ export default function Header() {
             <HeaderIcon label="Groups" ariaLabel="Groups">
               <FontAwesomeIcon icon={faUsers} className="w-6 h-6" />
             </HeaderIcon>
+            <Link href="/messages" aria-label="Messages" title="Messages" className="px-4 py-2 rounded-md hover:bg-white/10 text-white flex items-center focus:outline-none focus:ring-2 focus:ring-white/50">
+              <FontAwesomeIcon icon={faComments} className="w-6 h-6" />
+            </Link>
             <HeaderIcon label="Marketplace" ariaLabel="Marketplace">
               <FontAwesomeIcon icon={faStore} className="w-6 h-6" />
             </HeaderIcon>
@@ -60,10 +80,12 @@ export default function Header() {
             <FontAwesomeIcon icon={faPlus} className="w-5 h-5" />
           </button>
 
-          <button aria-label="Messenger" className="relative p-2 rounded-full hover:bg-white/10 text-white">
+          <Link href="/messages" aria-label="Messenger" className="relative p-2 rounded-full hover:bg-white/10 text-white">
             <FontAwesomeIcon icon={faComments} className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">3</span>
-          </button>
+            {unread > 0 && (
+              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">{unread}</span>
+            )}
+          </Link>
 
           <button aria-label="Notifications" className="relative p-2 rounded-full hover:bg-white/10 text-white">
             <FontAwesomeIcon icon={faBell} className="w-5 h-5" />

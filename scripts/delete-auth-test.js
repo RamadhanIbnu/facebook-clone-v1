@@ -33,7 +33,7 @@
   }
 
   async function safeJson(res) {
-    try { return await res.json(); } catch (e) { return null; }
+    try { return await res.json(); } catch { return null; }
   }
 
   try {
@@ -87,7 +87,7 @@
     console.log('\nAttempting deletes as OWNER (should succeed)');
     r = await fetch(`${base}/api/posts/${postId}`, { method: 'DELETE', headers: { cookie: ownerCookie } });
     console.log('DELETE post status (owner):', r.status);
-    try { console.log('Body:', await r.text()); } catch (e) { console.log('No body'); }
+  try { console.log('Body:', await r.text()); } catch { console.log('No body'); }
 
     // Recreate post & comment to test attacker delete (since post was deleted)
     console.log('\nRecreating post as owner for attacker test...');
@@ -113,15 +113,18 @@
     console.log('\nAttempting deletes as ATTACKER (should be forbidden)');
     r = await fetch(`${base}/api/posts/${postId2}`, { method: 'DELETE', headers: { cookie: attackerCookie } });
     console.log('DELETE post status (attacker):', r.status);
-    try { console.log('Body:', await r.text()); } catch (e) { console.log('No body'); }
+  try { console.log('Body:', await r.text()); } catch { console.log('No body'); }
 
     r = await fetch(`${base}/api/posts/${postId2}/comment/${commentId2}`, { method: 'DELETE', headers: { cookie: attackerCookie } });
     console.log('DELETE comment status (attacker):', r.status);
-    try { console.log('Body:', await r.text()); } catch (e) { console.log('No body'); }
+  try { console.log('Body:', await r.text()); } catch { console.log('No body'); }
 
     console.log('\nDone');
   } catch (err) {
     console.error('Test failed', err);
     process.exit(1);
   }
+  // reference helpers to satisfy strict "noUnusedLocals" checks in the TypeScript build
+  void signup;
+  void signin;
 })();
