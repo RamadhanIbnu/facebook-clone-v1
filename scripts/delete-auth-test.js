@@ -1,4 +1,5 @@
 // delete-auth-test.js — Node script to verify delete endpoint ownership semantics
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 (async () => {
   const base = 'http://localhost:3000';
@@ -18,13 +19,13 @@
     return Object.values(map).join('; ');
   }
 
-  async function signup(email, name, password) {
+  async function _signup(email, name, password) {
     const res = await fetch(`${base}/api/auth/signup`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, name }), redirect: 'manual' });
     const body = await safeJson(res);
     return { res, body };
   }
 
-  async function signin(email, password, cookie = '') {
+  async function _signin(email, password, cookie = '') {
     const headers = { 'Content-Type': 'application/json' };
     if (cookie) headers['cookie'] = cookie;
     const res = await fetch(`${base}/api/auth/signin`, { method: 'POST', headers, body: JSON.stringify({ email, password }), redirect: 'manual' });
@@ -45,15 +46,15 @@
     let ownerCookie = '';
     let r = await fetch(`${base}/api/auth/signup`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: ownerEmail, password: pass, name: 'Owner' }), redirect: 'manual' });
     ownerCookie = mergeCookies(ownerCookie, r);
-    let ownerJson = await safeJson(r);
-    console.log('Owner signup status', r.status, ownerJson && ownerJson.user ? `id=${ownerJson.user.id}` : 'no-user');
+  let _ownerJson = await safeJson(r);
+  console.log('Owner signup status', r.status, _ownerJson && _ownerJson.user ? `id=${_ownerJson.user.id}` : 'no-user');
 
     console.log('Signing up attacker...');
     let attackerCookie = '';
     r = await fetch(`${base}/api/auth/signup`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: attackerEmail, password: pass, name: 'Attacker' }), redirect: 'manual' });
     attackerCookie = mergeCookies(attackerCookie, r);
-    let attackerJson = await safeJson(r);
-    console.log('Attacker signup status', r.status, attackerJson && attackerJson.user ? `id=${attackerJson.user.id}` : 'no-user');
+  let _attackerJson = await safeJson(r);
+  console.log('Attacker signup status', r.status, _attackerJson && _attackerJson.user ? `id=${_attackerJson.user.id}` : 'no-user');
 
     // ensure we are signed in as owner for creation
     console.log('Ensuring owner session via signin (capturing cookies)...');

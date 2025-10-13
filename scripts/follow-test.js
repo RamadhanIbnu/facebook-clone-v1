@@ -26,7 +26,7 @@
     console.log('Creating user B...');
     const userBEmail = 'b@example.com';
     const userBPass = 'password123';
-    const signinB = await signupOrSignin(userBEmail, 'User B', userBPass);
+  await signupOrSignin(userBEmail, 'User B', userBPass);
 
     // fetch user list or user B profile to get id
     console.log('Looking up User B profile...');
@@ -68,14 +68,14 @@
     res = await fetch(`${base}/api/profile/${userCId}/follow`, { method: 'POST' });
     console.log('POST follow status', res.status);
     let j = null;
-    try { j = await res.json(); } catch (e) { j = null; }
+  try { j = await res.json(); } catch { j = null; }
     console.log('POST follow body', j);
 
     // unfollow
     console.log('Unfollowing C...');
     res = await fetch(`${base}/api/profile/${userCId}/follow`, { method: 'DELETE' });
     console.log('DELETE follow status', res.status);
-    try { j = await res.json(); } catch (e) { j = null; }
+  try { j = await res.json(); } catch { j = null; }
     console.log('DELETE follow body', j);
 
     console.log('Done');

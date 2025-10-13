@@ -1,4 +1,5 @@
-// delete-auth-test-cookie.js — uses a CookieJar (tough-cookie) with fetch-cookie + node-fetch
+/* eslint-disable @typescript-eslint/no-require-imports */
+// delete-auth-test-cookie.js  uses a CookieJar (tough-cookie) with fetch-cookie + node-fetch
 
 (async () => {
   const base = 'http://localhost:3000';
@@ -10,7 +11,7 @@
   const fetchWithCookies = fetchCookie(fetch, jar);
 
   async function safeJson(res) {
-    try { return await res.json(); } catch (e) { return null; }
+    try { return await res.json(); } catch { return null; }
   }
 
   try {

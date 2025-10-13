@@ -68,11 +68,17 @@ export default function SignInModal() {
     const payload: Record<string, string> = { email, password };
     if (mode === 'signup') payload.name = name;
     const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    const data = await res.json();
+    let data: unknown = null;
+    const ct = res.headers.get('content-type') ?? '';
+    if (ct.includes('application/json')) {
+      try { data = await res.json(); } catch { data = null; }
+    }
     setLoading(false);
     if (!res.ok) {
-      setError(data.error || (mode === 'signup' ? 'Sign up failed' : 'Sign in failed'));
-      push({ type: 'error', message: data.error || 'Authentication failed' });
+  const getError = (v: unknown): string | undefined => (typeof v === 'object' && v !== null && 'error' in (v as object)) ? ((v as { error?: string }).error) : undefined;
+  const errMsg = getError(data);
+  setError(errMsg || (mode === 'signup' ? 'Sign up failed' : 'Sign in failed'));
+  push({ type: 'error', message: errMsg || 'Authentication failed' });
       return;
     }
     close();

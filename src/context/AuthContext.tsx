@@ -17,8 +17,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const refresh = async () => {
     try {
       const res = await fetch('/api/auth/me');
-      const json = await res.json();
-      setUser(json.user ?? null);
+      if (!res.ok) {
+        setUser(null);
+        return;
+      }
+      let json: unknown = null;
+      const ct = res.headers.get('content-type') ?? '';
+      if (ct.includes('application/json')) {
+        try { json = await res.json(); } catch { json = null; }
+      }
+      const getUser = (v: unknown) => (typeof v === 'object' && v !== null && 'user' in (v as object)) ? (v as { user: User }).user : null;
+      setUser(getUser(json));
     } catch {
       setUser(null);
     }
