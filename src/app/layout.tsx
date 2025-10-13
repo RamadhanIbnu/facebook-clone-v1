@@ -5,6 +5,7 @@ import { AuthModalProvider } from "../context/AuthModalContext";
 import AuthProvider from "../context/AuthContext";
 import SignInModal from "../components/SignInModal";
 import ToastProvider, { ToastContainer } from "../context/ToastContext";
+import ChatWidget from "../components/ChatWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,6 +34,7 @@ export default function RootLayout({
           <AuthProvider>
             <AuthModalProvider>
               {children}
+              <ChatWidget />
               <SignInModal />
               <ToastContainer />
             </AuthModalProvider>

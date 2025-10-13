@@ -18,6 +18,11 @@ model User {
   avatar    String?
   posts     Post[]
   messages  Message[]
+  messageReads MessageRead[]
+  reactions Reaction[]
+  conversationReadsAsUser ConversationRead[] @relation("conv_user")
+  conversationReadsAsOther ConversationRead[] @relation("conv_other")
+  receivedMessages Message[] @relation("MessageRecipient")
   comments  Comment[]
   likes     Like[]
   followers Follow[]  @relation("following")
@@ -71,6 +76,45 @@ model Message {
   id        String   @id @default(cuid())
   user      User?    @relation(fields: [userId], references: [id])
   userId    String?
+  recipient User?    @relation("MessageRecipient", fields: [recipientId], references: [id])
+  recipientId String?
   text      String
   createdAt DateTime @default(now())
+  reads     MessageRead[]
+  reactions Reaction[]
+}
+
+model MessageRead {
+  id        String   @id @default(cuid())
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  readAt    DateTime @default(now())
+
+  @@unique([messageId, userId])
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  messageId String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  type      String
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, userId, type])
+}
+
+// track per-user read cursor for a one-to-one conversation (user <> otherUser)
+model ConversationRead {
+  id         String   @id @default(cuid())
+  user       User     @relation("conv_user", fields: [userId], references: [id])
+  userId     String
+  otherUser  User     @relation("conv_other", fields: [otherUserId], references: [id])
+  otherUserId String
+  lastReadAt DateTime @default(now())
+
+  @@unique([userId, otherUserId])
 }

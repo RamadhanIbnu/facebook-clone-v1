@@ -1,5 +1,5 @@
 import http from 'http';
-import WebSocket from 'ws';
+import WebSocket, { WebSocketServer } from 'ws';
 
 const PORT = process.env.WS_PORT || 6789;
 
@@ -27,16 +27,28 @@ const server = http.createServer((req, res) => {
   res.end('ws server');
 });
 
-const wss = new WebSocket.Server({ server });
+const wss = new WebSocketServer({ server });
 
 wss.on('connection', (ws) => {
   console.log('ws client connected');
   ws.on('message', (msg) => {
     try {
       const parsed = JSON.parse(msg.toString());
-      if (parsed && parsed.type === 'ping') ws.send(JSON.stringify({ type: 'pong' }));
-    } catch {
-      // ignore
+      // respond to ping
+      if (parsed && parsed.type === 'ping') {
+        ws.send(JSON.stringify({ type: 'pong' }));
+        return;
+      }
+      // broadcast client messages (presence, typing, etc.) to all connected clients
+      if (parsed && typeof parsed === 'object' && parsed.type) {
+        const data = JSON.stringify(parsed);
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) client.send(data);
+        });
+      }
+    } catch (e) {
+      // ignore parse errors
+      console.error('ws message parse error', e);
     }
   });
   ws.on('close', () => console.log('ws client disconnected'));
