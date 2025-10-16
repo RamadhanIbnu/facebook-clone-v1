@@ -1,17 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f0f2f5; /* Facebook-like page bg */
+  --background: #f0f2f5; 
   --foreground: #050505;
   --fb-blue: #1877f2;
 }
 
-/* @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-} */
+
 
 body {
   background: var(--background);

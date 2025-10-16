@@ -10,7 +10,6 @@ type Props = { currentUserId: string };
 
 export default function Sidebar({ currentUserId }: Props) {
   const { user: authUser } = useAuth();
-  // prefer avatar/title from the authenticated user when it's the same id
   const user: User | null = currentUserId
     ? authUser && authUser.id === currentUserId
       ? (authUser as User)

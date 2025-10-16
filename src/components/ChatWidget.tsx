@@ -15,6 +15,8 @@ type Message = {
   text: string;
   createdAt: string;
   user?: { id: string; name: string; avatar?: string | null } | null;
+  reactions?: { type: string; userId: string }[];
+  readBy?: string[];
 };
 
 export default function ChatWidget() {
@@ -34,7 +36,6 @@ export default function ChatWidget() {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const typingTimeoutRef = useRef<number | null>(null);
-  // no dragging: always anchored to bottom-right by default
 
   const load = useCallback(async () => {
     try {
@@ -42,7 +43,6 @@ export default function ChatWidget() {
       const res = await fetch(url);
       const json = await res.json();
       let msgs = json.messages ?? [];
-      // if viewing a thread, present messages in chronological order (oldest first)
       if (recipientId) msgs = (msgs as Message[]).slice().reverse();
       setMessages(msgs);
     } catch (e) {
@@ -83,7 +83,7 @@ export default function ChatWidget() {
   const alignClass = position === 'left' ? 'items-start' : 'items-end';
 
   useEffect(() => {
-    if (!user) return; // lazy init: only subscribe when signed in
+    if (!user) return;
     const client = getWsClient();
     type WsMsg = { type?: string; message?: Message } | null;
     const unsub = client.subscribe((data: unknown) => {
@@ -147,18 +147,15 @@ export default function ChatWidget() {
               matchesThread = true;
             }
           } else {
-            // no thread selected: show public (no-recipient) messages
             if (incomingRecipient == null) matchesThread = true;
           }
 
-          // Always notify the user (and increment unread) if they are the recipient of a private message
           const amIRecipient = incomingRecipient !== undefined && incomingRecipient === meId;
 
           if (matchesThread) {
             setMessages((m) => [incoming as Message, ...m].slice(0, 50));
             if (!open || minimized) setUnread((u) => u + 1);
           } else if (amIRecipient) {
-            // Not viewing the thread, but the message was sent to me: increment unread so user notices
             setUnread((u) => u + 1);
           }
         }
@@ -166,7 +163,6 @@ export default function ChatWidget() {
         console.error('ws handler error', err);
       }
     });
-      // when we connect, announce presence
       try {
         const meId = user?.id;
         if (meId) client.send({ type: 'presence', userId: meId, online: true });
@@ -182,12 +178,10 @@ export default function ChatWidget() {
   useEffect(() => {
     try {
       if (!scrollerRef.current) return;
-      // if a thread is open or messages just updated, scroll to bottom
       scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
     } catch {}
   }, [messages, recipientId, open]);
 
-  // no open-from-icon repositioning or animation — always anchored bottom-right
 
   const post = async () => {
     if (!text.trim()) return;
@@ -207,7 +201,6 @@ export default function ChatWidget() {
         const msg = (json as Record<string, unknown>)['message'] as unknown;
         setMessages((m) => [(msg as Message), ...m].slice(0, 50));
         setText('');
-        // notify typing stopped for this thread
         try {
           const client = getWsClient();
           const meId = user?.id;
@@ -227,7 +220,7 @@ export default function ChatWidget() {
     <>
       {user && (
         <div>
-          {/* Floating toggle button */}
+          
           <div role="chat-widget" style={containerStyle}>
             <div className={`flex flex-col ${alignClass} gap-2`}> 
               {open && (
@@ -238,7 +231,7 @@ export default function ChatWidget() {
                     maxWidth: '24rem',
                   }}
                 >
-                  {/* header */}
+                  
                   <div className="px-3 py-2 bg-blue-600 text-white flex items-center justify-between cursor-default touch-none select-none">
                     <div className="font-semibold">Messenger</div>
                     <div className="flex items-center gap-2">
@@ -253,7 +246,7 @@ export default function ChatWidget() {
                     </div>
                   </div>
                   <div ref={scrollerRef} className={`p-2 space-y-2 h-64 overflow-auto bg-gray-50 transition-all ${minimized ? 'hidden' : ''}`}>
-                    {/* thread header (when a recipient is selected) */}
+                    
                     {currentRecipient && (
                       <div className="flex items-center justify-between p-2 bg-white border rounded">
                         <div className="flex items-center gap-2">
@@ -270,7 +263,7 @@ export default function ChatWidget() {
                         </div>
                       </div>
                     )}
-                    {/* friends list at top */}
+                    
                     <ChatFriendsList presence={presenceMap} onSelect={(f) => {
                       // set the thread recipient and prefill message input and focus
                       try { setRecipientId(f.id); setCurrentRecipient({ id: f.id, name: f.name, avatar: f.avatar ?? undefined }); } catch {}
@@ -280,7 +273,7 @@ export default function ChatWidget() {
                       try { fetch('/api/messages/read', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ recipientId: f.id }) }); } catch {}
                     }} />
                     {messages.length === 0 && <div className="text-center text-sm text-gray-500 p-4">No messages yet</div>}
-                    {messages.map((m) => <MessageItem key={m.id} message={m} />)}
+                    {messages.map((m) => <MessageItem key={m.id} message={m} currentUserId={user?.id ?? null} />)}
                   </div>
                   {!minimized && (
                     <div className="p-2 bg-white border-t flex gap-2">

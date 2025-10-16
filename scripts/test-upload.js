@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-const fs = require('fs');
-const { createClient } = require('@supabase/supabase-js');
+ 
+import fs from 'fs';
+import  { createClient } from '@supabase/supabase-js';
 
 const env = fs.readFileSync('.env', 'utf8');
 const get = (k) => {

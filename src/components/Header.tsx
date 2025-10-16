@@ -41,12 +41,12 @@ export default function Header() {
   return (
   <header className="w-full fb-header sticky top-0 z-50 text-white shadow-sm backdrop-blur-sm">
     <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-8 py-3 lg:py-4 flex items-center gap-4 min-h-[56px]">
-        {/* Left: logo */}
+        
         <div className="flex items-center gap-3">
           <div className="fb-logo">Faceclone</div>
         </div>
 
-        {/* Center: nav icons + search */}
+        
         <div className="flex-1 flex items-center justify-center">
           <nav className="hidden md:flex items-center gap-1 bg-transparent text-white">
             <Link href="/" aria-label="Home" title="Home" className="px-4 py-2 rounded-md hover:bg-white/10 text-white flex items-center focus:outline-none focus:ring-2 focus:ring-white/50">
@@ -74,7 +74,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Right: actions */}
+        
         <div className="flex items-center gap-2">
           <button aria-label="Create" className="p-2 rounded-full hover:bg-white/10 text-white hidden sm:inline-flex">
             <FontAwesomeIcon icon={faPlus} className="w-5 h-5" />

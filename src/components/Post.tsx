@@ -29,8 +29,6 @@ function CommentDeleteControls({ postId, commentId, onDeleted, push }: CommentDe
   }, [confirming]);
 
   const doDelete = async () => {
-    // simple auth check
-    // we won't have access to currentUserId here, rely on the server response
     setLoading(true);
     try {
       const res = await fetch(`/api/posts/${postId}/comment/${commentId}`, { method: "DELETE" });
@@ -90,7 +88,6 @@ type Props = {
 export default function PostItem({ post, currentUserId, onUpdated }: Props) {
   const { user: authUser } = useAuth();
   const storeUser = getUserById(post.userId);
-  // prefer server-provided user on the post object, fall back to local store
   const author = (post as unknown as { user?: { id: string; name?: string | null; avatar?: string | null } })?.user ?? storeUser;
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
@@ -104,7 +101,6 @@ export default function PostItem({ post, currentUserId, onUpdated }: Props) {
   };
 
   const { push } = useToast();
-  // post delete UX state
   const [confirmDeletePost, setConfirmDeletePost] = useState(false);
   const [deletingPost, setDeletingPost] = useState(false);
   const confirmPostButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -116,7 +112,6 @@ export default function PostItem({ post, currentUserId, onUpdated }: Props) {
   const deletePost = async () => {
     if (!currentUserId) return authModal.open();
     setDeletingPost(true);
-    // start deleting (local UX handled via confirm state)
     try {
       const res = await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
       let data: unknown = undefined;
@@ -165,11 +160,8 @@ export default function PostItem({ post, currentUserId, onUpdated }: Props) {
                   name={author.name ?? ''}
                   size={44}
                   src={
-                    // prefer server-provided avatar on the post object
                     ((post as unknown as { user?: { avatar?: string } })?.user?.avatar) ??
-                    // if this post belongs to the signed-in user, use auth avatar
                     (post.userId === authUser?.id ? (authUser.avatar ?? undefined) : undefined) ??
-                    // fallback to local store avatar
                     ((author as unknown as { avatar?: string | null }).avatar ?? undefined)
                   }
                 />
@@ -261,10 +253,8 @@ export default function PostItem({ post, currentUserId, onUpdated }: Props) {
                                   name={((c as unknown as { user?: { name?: string } })?.user?.name) ?? (c.userId === authUser?.id ? authUser?.name : getUserById(c.userId).name)}
                                 size={28}
                                 src={
-                                  // prefer server-provided avatar on the comment object
                                     ((c as unknown as { user?: { avatar?: string } })?.user?.avatar) ??
                                     (c.userId === authUser?.id ? (authUser.avatar ?? undefined) : undefined) ??
-                                    // fallback to local store avatar
                                     ((getUserById(c.userId) as unknown as { avatar?: string | null }).avatar ?? undefined)
                                 }
                               />

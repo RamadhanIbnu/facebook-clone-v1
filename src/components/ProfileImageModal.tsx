@@ -18,7 +18,7 @@ export default function ProfileImageModal({ src, open, onClose, onFileSelected, 
   const [dragOver, setDragOver] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const MAX_SIZE = 5 * 1024 * 1024; // 5 MB
+  const MAX_SIZE = 5 * 1024 * 1024;
   const ALLOWED = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
   useEffect(() => {
@@ -28,7 +28,6 @@ export default function ProfileImageModal({ src, open, onClose, onFileSelected, 
       if (e.key === 'Escape') onClose();
     };
     document.addEventListener('keydown', onKey);
-    // focus first focusable element inside modal
     setTimeout(() => el?.focus(), 0);
     return () => document.removeEventListener('keydown', onKey);
   }, [open, onClose]);
@@ -58,7 +57,7 @@ export default function ProfileImageModal({ src, open, onClose, onFileSelected, 
         return;
       }
       setError(null);
-      onFileSelected(f);
+      onFileSelected(f); 
       setFileName(f.name);
     }
   };

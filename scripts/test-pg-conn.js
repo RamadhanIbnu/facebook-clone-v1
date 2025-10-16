@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-const fs = require('fs');
-const { Client } = require('pg');
+ 
+import  fs from 'fs';
+import { Client } from 'pg';
 
 function readEnv() {
   const env = fs.readFileSync('.env', 'utf8');

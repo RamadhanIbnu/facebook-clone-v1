@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { useAuthModal } from "../../../context/AuthModalContext";
-// programmatic routing not currently required in this file
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import Avatar from "../../../components/Avatar";
@@ -44,14 +43,13 @@ function FollowButton({ userId, initialFollowing, initialCount, onCountChange }:
       if (!res.ok) {
         let errMsg = 'Failed to follow';
         if (json && typeof json === 'object' && 'error' in json) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          errMsg = (json as any).error || errMsg;
+          const maybe = json as Record<string, unknown>;
+          if (typeof maybe.error === 'string') errMsg = maybe.error;
         }
         throw new Error(errMsg);
       }
       if (json && typeof json === 'object') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const j = json as any;
+        const j = json as Record<string, unknown>;
         if (typeof j.isFollowing === 'boolean') setFollowing(j.isFollowing);
         if (typeof j.followersCount === 'number') {
           setCount(j.followersCount);
@@ -85,14 +83,13 @@ function FollowButton({ userId, initialFollowing, initialCount, onCountChange }:
       if (!res.ok) {
         let errMsg = 'Failed to unfollow';
         if (json && typeof json === 'object' && 'error' in json) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          errMsg = (json as any).error || errMsg;
+          const maybe = json as Record<string, unknown>;
+          if (typeof maybe.error === 'string') errMsg = maybe.error;
         }
         throw new Error(errMsg);
       }
       if (json && typeof json === 'object') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const j = json as any;
+        const j = json as Record<string, unknown>;
         if (typeof j.isFollowing === 'boolean') setFollowing(j.isFollowing);
         if (typeof j.followersCount === 'number') {
           setCount(j.followersCount);
@@ -174,7 +171,7 @@ function FollowButton({ userId, initialFollowing, initialCount, onCountChange }:
         )}
       </div>
 
-      {/* follower count shown in the profile info card; keep FollowButton focused on the action */}
+      
 
       {menuOpen && (
         <div ref={menuRef} role="menu" aria-label="Follow actions" className="absolute right-0 mt-12 w-44 bg-white rounded shadow-lg z-50">
@@ -234,7 +231,6 @@ export default function ProfilePage() {
           try {
             json = await res.json();
           } catch {
-            // not valid JSON
             json = null;
           }
         }
@@ -243,9 +239,9 @@ export default function ProfilePage() {
           // if the server returned an error status, show a toast and bail
           let parsedError: string | undefined;
           if (json && typeof json === "object" && json !== null && "error" in json) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            parsedError = (json as any).error;
-          }
+              const maybe = json as Record<string, unknown>;
+              if (typeof maybe.error === 'string') parsedError = maybe.error;
+            }
           push({ type: "error", message: parsedError || `Failed to load profile (${res.status})` });
           setData(null);
           return;
@@ -280,8 +276,6 @@ export default function ProfilePage() {
     const fd = new FormData();
     fd.append('file', file);
     const res = await fetch('/api/profile/avatar', { method: 'POST', body: fd });
-    // defensively parse JSON: the server should return JSON, but sometimes platform errors
-    // or network issues result in empty/non-JSON responses which cause res.json() to throw.
   let json: Record<string, unknown> | null = null;
     const ct = res.headers.get('content-type') ?? '';
     if (ct.includes('application/json')) {
@@ -289,7 +283,6 @@ export default function ProfilePage() {
     }
     setLoading(false);
     if (res.ok) {
-      // update local UI immediately
       const avatar = json && typeof json.avatar === 'string' ? json.avatar : undefined;
       setData((d) => (d ? { ...d, user: { ...d.user, avatar: avatar ?? d.user.avatar } } : d));
       setFile(null);
@@ -327,7 +320,6 @@ export default function ProfilePage() {
 
   const { user, posts } = data;
 
-  // generate a simple username handle from the display name
   const makeHandle = (name?: string | null) => {
     if (!name) return '';
     return '@' + name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 30);
@@ -337,24 +329,24 @@ export default function ProfilePage() {
     <div>
       <Header />
       <div className="max-w-4xl mx-auto p-6">
-      {/* cover */}
+      
       <div className="relative">
         <div className="h-40 w-full bg-gradient-to-r from-blue-500 to-blue-400 rounded-t-md shadow-sm overflow-hidden" />
-          {/* header overlay (FB-like) */}
+          
           <div className="absolute inset-x-0 top-3 flex items-center px-4">
             <div className="flex-1" />
 
-            {/* intentionally empty — name will appear beside the avatar below for a Facebook-like layout */}
+            
             <div className="flex-1 hidden md:block" />
 
             <div className="flex-1 flex justify-end items-center gap-2">
-              {/* buttons moved to the username row for both desktop and mobile */}
+              
               <div className="hidden md:block" />
             </div>
           </div>
       </div>
 
-      {/* avatar + name */}
+      
       <div className="-mt-16">
         <Breadcrumb name={user.name} />
         <div className="flex items-center gap-6">
@@ -367,7 +359,7 @@ export default function ProfilePage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-4">
               
-              {/* name block: username left, actions right on same row for md+ */}
+              
               <div className="hidden md:flex items-center justify-between w-full">
                 <div className="min-w-0">
                   <h1 className="text-2xl font-extrabold text-gray-900 truncate">{user.name}</h1>
@@ -411,7 +403,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
-              {/* follow button moved to header overlay */}
+              
             </div>
           </div>
         </div>
@@ -427,7 +419,7 @@ export default function ProfilePage() {
         loading={loading}
       />
 
-      {/* stats + posts */}
+      
       <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1">
           <div className="p-4 bg-white rounded shadow-sm space-y-3">
@@ -453,7 +445,7 @@ export default function ProfilePage() {
 
         <div className="md:col-span-2">
           <div className="space-y-4">
-            {/* Composer above posts (Facebook-like) */}
+            
             {authUser?.id === user?.id && (
                 <NewPost currentUserId={authUser?.id ?? ""} onCreated={(created) => {
               const createdAny = created as unknown as PostPublic;

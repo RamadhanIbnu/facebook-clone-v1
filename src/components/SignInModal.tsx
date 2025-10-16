@@ -110,8 +110,7 @@ export default function SignInModal() {
         {mode === 'signup' ? (
           <input className="w-full p-2 mb-2" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} aria-label="Email" />
         ) : null}
-        {/* Password input */}
-        <PasswordInput value={password} onChange={setPassword} placeholder="Password" ariaLabel="Password" />
+  <PasswordInput value={password} onChange={setPassword} placeholder="Password" ariaLabel="Password" />
         <div className="flex gap-2 justify-end">
           <button onClick={close} className="px-4 py-2">Cancel</button>
           <button onClick={submit} disabled={loading} className="px-4 py-2 bg-blue-600 text-white rounded">{loading ? (mode === 'signup' ? 'Signing up...' : 'Signing in...') : (mode === 'signup' ? 'Sign up' : 'Sign in')}</button>

@@ -7,6 +7,9 @@ type MessageOut = {
   text: string;
   createdAt: Date;
   user?: { id: string; name: string | null; avatar?: string | null } | null;
+  readBy?: string[];
+  readUsers?: { id: string; name: string; avatar?: string | null }[];
+  reactions?: { type: string; userId: string }[];
 };
 
 type DbUser = { id: string; name: string; avatar?: string | null } | null;
@@ -33,16 +36,22 @@ export async function GET(req: Request) {
         { recipientId: recipientId, userId: viewerId },
         { recipientId: viewerId, userId: recipientId },
       ];
+    } else {
+      // no recipient requested: only return public messages (no recipient)
+      where.recipientId = null;
     }
     type DbUser = { id: string; name: string; avatar?: string | null } | null;
     type DbRec = { id: string; userId?: string | null; text: string; createdAt: string | Date; user?: DbUser; recipient?: DbUser };
-    const recs = await messageDelegate.findMany({ include: { user: true }, where, orderBy: { createdAt: "desc" } });
+  const recs = await messageDelegate.findMany({ include: { user: true, reads: { include: { user: true } }, reactions: { include: { user: true } } }, where, orderBy: { createdAt: "desc" } });
     const mapped: MessageOut[] = (recs as DbRec[]).map((rec) => ({
       id: rec.id,
       userId: (rec.userId as string) ?? null,
       text: rec.text,
       createdAt: rec.createdAt as unknown as Date,
       user: rec.user ? { id: rec.user.id, name: rec.user.name, avatar: rec.user.avatar ?? null } : null,
+  readBy: Array.isArray((rec as unknown as { reads?: unknown }).reads) ? (rec as unknown as { reads: Array<{ userId: string }> }).reads.map((r) => r.userId) : [],
+  readUsers: Array.isArray((rec as unknown as { reads?: unknown }).reads) ? (rec as unknown as { reads: Array<{ user?: { id: string; name: string; avatar?: string | null } }> }).reads.map((r) => (r.user ? { id: r.user.id, name: r.user.name, avatar: r.user.avatar ?? undefined } : null)).filter(Boolean) as { id: string; name: string; avatar?: string | null }[] : [],
+  reactions: Array.isArray((rec as unknown as { reactions?: unknown }).reactions) ? (rec as unknown as { reactions: Array<{ type: string; userId: string; user?: { id: string; name: string; avatar?: string | null } }> }).reactions.map((r) => ({ type: r.type, userId: r.userId, user: r.user ? { id: r.user.id, name: r.user.name, avatar: r.user.avatar ?? undefined } : undefined })) : [],
     }));
     return NextResponse.json({ messages: mapped });
   } catch (err) {

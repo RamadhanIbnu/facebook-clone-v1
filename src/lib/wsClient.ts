@@ -31,6 +31,14 @@ class WSClient {
     });
   }
 
+  // gracefully close the underlying socket
+  close() {
+    try {
+      this.ws?.close();
+    } catch {}
+    this.ws = null;
+  }
+
   subscribe(h: Handler<unknown>): () => void {
     this.handlers.add(h as Handler);
     if (!this.ws) this.connect();
@@ -48,8 +56,43 @@ export function getWsClient() {
   if (!client) {
     const port = process.env.NEXT_PUBLIC_WS_PORT || '6789';
     const protocol = typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss' : 'ws';
-    const url = `${protocol}://${window.location.hostname}:${port}`;
-    client = new WSClient(url);
+    const base = `${protocol}://${window.location.hostname}:${port}`;
+
+    client = new WSClient(base);
+
+    (async () => {
+      try {
+        const res = await fetch('/api/ws/token');
+        if (res.ok) {
+          const body = await res.json();
+          if (body?.token) {
+            const tok = encodeURIComponent(body.token);
+            try { client?.close(); } catch {}
+            client = new WSClient(`${base}/?token=${tok}`);
+          }
+        } else {
+          // fallback to cookie token if the endpoint rejects
+          try {
+            const cookie = typeof document !== 'undefined' ? document.cookie : '';
+            const m = cookie.match(/__session=([^;]+)/);
+            if (m) {
+              const token = decodeURIComponent(m[1]);
+              client = new WSClient(`${base}/?token=${encodeURIComponent(token)}`);
+            }
+          } catch {}
+        }
+      } catch {
+        // network or other error: try cookie fallback
+        try {
+          const cookie = typeof document !== 'undefined' ? document.cookie : '';
+          const m = cookie.match(/__session=([^;]+)/);
+          if (m) {
+            const token = decodeURIComponent(m[1]);
+            client = new WSClient(`${base}/?token=${encodeURIComponent(token)}`);
+          }
+        } catch {}
+      }
+    })();
   }
   return client;
 }

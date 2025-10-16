@@ -1,8 +1,7 @@
+import {PrismaClient} from '@prisma/client';
+
 (async () => {
   try {
-     
-    /* eslint-disable @typescript-eslint/no-require-imports */
-    const { PrismaClient } = require('@prisma/client');
     const p = new PrismaClient();
     const users = await p.user.findMany({ take: 20, select: { id: true, email: true, name: true } });
     console.log('users:', users);

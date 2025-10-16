@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
+import {PrismaClient} from '@prisma/client';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+
 (async () => {
   try {
-    const { PrismaClient } = require('@prisma/client');
-    const bcrypt = require('bcryptjs');
-    const jwt = require('jsonwebtoken');
-
     const p = new PrismaClient();
     const email = 'demo@local.test';
     const user = await p.user.findUnique({ where: { email } });
