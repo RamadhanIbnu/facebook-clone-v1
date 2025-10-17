@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { useAuthModal } from "../../../context/AuthModalContext";
 // programmatic routing not currently required in this file
@@ -23,13 +23,13 @@ type PostWithUser = Post & { user?: { id: string; name?: string | null; avatar?:
 function FollowButton({ userId, initialFollowing, initialCount, onCountChange }: { userId: string; initialFollowing?: boolean; initialCount?: number | null; onCountChange?: (n: number) => void }) {
   const auth = useAuth();
   const authModal = useAuthModal();
-  const [following, setFollowing] = React.useState<boolean>(!!initialFollowing);
-  const [count, setCount] = React.useState<number>(initialCount ?? 0);
+  const [following, setFollowing] = useState<boolean>(!!initialFollowing);
+  const [count, setCount] = useState<number>(initialCount ?? 0);
   const { push } = useToast();
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const [menuOpen, setMenuOpen] = React.useState(false);
-  const menuRef = React.useRef<HTMLDivElement | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
 
   const followUser = async () => {
     if (!auth.user) return authModal.open('signin');
@@ -118,7 +118,7 @@ function FollowButton({ userId, initialFollowing, initialCount, onCountChange }:
   };
 
   // close dropdown when clicking outside or pressing Escape
-  React.useEffect(() => {
+ useEffect(() => {
     function onDoc(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
     }
@@ -174,7 +174,6 @@ function FollowButton({ userId, initialFollowing, initialCount, onCountChange }:
         )}
       </div>
 
-      {/* follower count shown in the profile info card; keep FollowButton focused on the action */}
 
       {menuOpen && (
         <div ref={menuRef} role="menu" aria-label="Follow actions" className="absolute right-0 mt-12 w-44 bg-white rounded shadow-lg z-50">
@@ -193,13 +192,6 @@ function Breadcrumb({ name }: { name: string }) {
   return (
     <nav className="text-sm text-gray-600 mb-3" aria-label="Breadcrumb">
       <ol className="inline-flex items-center space-x-2">
-        <li>
-          <Link href="/" className="hover:underline text-gray-700">Home</Link>
-        </li>
-        <li className="text-gray-400">/</li>
-        <li>
-          <Link href="/users" className="hover:underline text-gray-700">Users</Link>
-        </li>
         <li className="text-gray-400">/</li>
         <li aria-current="page" className="text-gray-900 font-medium">{name}</li>
       </ol>
@@ -218,7 +210,6 @@ export default function ProfilePage() {
   const { refresh } = useAuth();
   const { push } = useToast();
   const { user: authUser } = useAuth();
-  // router was previously used for programmatic navigation; BackButton now uses Link
 
   
 
@@ -367,7 +358,6 @@ export default function ProfilePage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-4">
               
-              {/* name block: username left, actions right on same row for md+ */}
               <div className="hidden md:flex items-center justify-between w-full">
                 <div className="min-w-0">
                   <h1 className="text-2xl font-extrabold text-gray-900 truncate">{user.name}</h1>

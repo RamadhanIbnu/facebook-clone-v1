@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { getUserIdFromCookie } from "../../../../lib/session";
-// Server-side Supabase upload
 import supabaseAdmin from "../../../../lib/supabase";
 import path from 'path';
 import { promises as fs } from 'fs';
@@ -16,16 +15,13 @@ export async function POST(req: Request) {
     const file = form.get("file");
     if (!file || !(file instanceof Blob)) return NextResponse.json({ error: "file required" }, { status: 400 });
 
-    // Read previous avatar so we can delete it after a successful upload
     const existing = await prisma.user.findUnique({ where: { id: userId }, select: { avatar: true } });
 
-    // Ensure Supabase admin client is configured (SUPABASE_URL & SUPABASE_SERVICE_ROLE_KEY)
     if (!supabaseAdmin) {
       console.error('Supabase admin client not configured (missing env vars)');
       return NextResponse.json({ error: 'Storage not configured' }, { status: 500 });
     }
 
-    // Upload to Supabase Storage (bucket: 'avatars')
     const bytes = Buffer.from(await file.arrayBuffer());
     const bucket = 'avatars';
     const filename = `${userId}/avatar_${Date.now()}.png`;
@@ -54,57 +50,55 @@ export async function POST(req: Request) {
       } catch (e) {
         const emsg = e instanceof Error ? e.message : String(e);
         console.error('Error while attempting to create bucket and retry upload:', emsg);
-        // coerce to the same shape the supabase client would return so downstream checks work
         uploadErr = ({ message: emsg } as unknown) as typeof uploadErr;
       }
     }
     if (uploadErr) {
       console.error('Supabase upload error after retry:', uploadErr);
-      // Fallback for local development: write file to public/uploads/<userId>/
-      try {
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads', userId);
-        await fs.mkdir(uploadDir, { recursive: true });
-        const localFilename = `avatar_${Date.now()}.png`;
-        const localPath = path.join(uploadDir, localFilename);
-        await fs.writeFile(localPath, bytes);
-        const publicPathLocal = `/uploads/${userId}/${localFilename}`;
-        await prisma.user.update({ where: { id: userId }, data: { avatar: publicPathLocal } });
-
-        // attempt to delete previous avatar if it was a local upload
+      if (process.env.NODE_ENV !== 'production') {
         try {
-          if (existing && existing.avatar && existing.avatar.startsWith('/uploads/')) {
-            const prevPath = path.join(process.cwd(), 'public', existing.avatar.replace(/^\//, ''));
-            await fs.unlink(prevPath).catch(() => {});
-          }
-        } catch (e) {
-          console.warn('Failed deleting previous local avatar', e instanceof Error ? e.message : String(e));
-        }
+          const uploadDir = path.join(process.cwd(), 'public', 'uploads', userId);
+          await fs.mkdir(uploadDir, { recursive: true });
+          const localFilename = `avatar_${Date.now()}.png`;
+          const localPath = path.join(uploadDir, localFilename);
+          await fs.writeFile(localPath, bytes);
+          const publicPathLocal = `/uploads/${userId}/${localFilename}`;
+          await prisma.user.update({ where: { id: userId }, data: { avatar: publicPathLocal } });
 
-        return NextResponse.json({ avatar: publicPathLocal });
-      } catch (e) {
-        console.error('Local fallback failed:', e);
-        return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
+          // attempt to delete previous avatar if it was a local upload
+          try {
+            if (existing && existing.avatar && existing.avatar.startsWith('/uploads/')) {
+              const prevPath = path.join(process.cwd(), 'public', existing.avatar.replace(/^\//, ''));
+              await fs.unlink(prevPath).catch(() => {});
+            }
+          } catch (e) {
+            console.warn('Failed deleting previous local avatar', e instanceof Error ? e.message : String(e));
+          }
+
+          return NextResponse.json({ avatar: publicPathLocal });
+        } catch (e) {
+          console.error('Local fallback failed:', e instanceof Error ? e.stack ?? e.message : String(e));
+          return NextResponse.json({ error: 'Upload failed (local fallback failed)' }, { status: 500 });
+        }
       }
+
+      console.error('Supabase upload failed and local fallback disabled in production. uploadErr:', uploadErr);
+      return NextResponse.json({ error: 'Upload failed (storage error)' }, { status: 500 });
     }
 
-    // Generate a public URL. If your bucket is private, generate an expiring URL instead.
     const publicUrlData = supabaseAdmin.storage.from(bucket).getPublicUrl(filename);
     const publicPath = publicUrlData.data.publicUrl;
-    // Update user record with new public URL
+
     await prisma.user.update({ where: { id: userId }, data: { avatar: publicPath } });
 
-    // If there was an existing avatar and it appears to be in our avatars bucket, delete it
     try {
       if (existing && existing.avatar) {
-        // Try to extract the object path from the public URL. Supabase public URL format is usually:
-        // https://<project>.supabase.co/storage/v1/object/public/<bucket>/<path>
         const u = new URL(existing.avatar);
         const parts = u.pathname.split('/');
         const idx = parts.indexOf('public');
         if (idx !== -1 && parts.length > idx + 2) {
           // object path is everything after /public/<bucket>/
           const objPath = parts.slice(idx + 2).join('/');
-          // Only attempt delete if the bucket matches
           const bucketName = parts[idx + 1];
           if (bucketName === bucket) {
             const { error: delErr } = await supabaseAdmin.storage.from(bucket).remove([objPath]);
@@ -118,8 +112,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ avatar: publicPath });
   } catch (err) {
-    // Log server-side error for diagnostics and return consistent JSON to the client
-    // so the client-side code can parse and show an error instead of throwing.
     const out = err instanceof Error ? err.stack ?? err.message : String(err);
     console.error("Error in /api/profile/avatar POST:", out);
     return NextResponse.json({ error: "Upload failed" }, { status: 500 });

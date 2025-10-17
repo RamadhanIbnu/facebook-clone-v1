@@ -43,8 +43,6 @@
     const authA = await res.json();
     console.log('Signed in as A:', authA);
 
-    // We need the id of B to follow. Try listing posts of B by id: but we don't have an index. Instead, hit /api/profile/:userId with a guess — but we don't know id.
-    // Alternate approach: create a new user C with unique email and then follow C using returned id on signup
     console.log('Creating user C to follow...');
     const uniq = Date.now();
     const userCEmail = `c${uniq}@example.com`;
