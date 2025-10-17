@@ -2,8 +2,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { useAuthModal } from "../../../context/AuthModalContext";
-// programmatic routing not currently required in this file
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import Avatar from "../../../components/Avatar";
 import PostItem from "../../../components/Post";
